@@ -1,3 +1,4 @@
+// File: src/chatbot/ActionProvider.js
 import { sendMessageToBackend, uploadImageToBackend } from "../api";
 
 class ActionProvider {
@@ -12,34 +13,31 @@ class ActionProvider {
       const botMessage = this.createChatBotMessage(response);
       this.addMessageToState(botMessage);
     } catch (err) {
-      console.error(err);
-      const errorMessage = this.createChatBotMessage(
-        "Sorry, I'm having trouble connecting. Please try again later."
+      const errorResponse = this.createChatBotMessage(
+        "Sorry, I'm having trouble connecting. Try again soon!"
       );
-      this.addMessageToState(errorMessage);
+      this.addMessageToState(errorResponse);
     }
   };
 
+  // Optional: method to handle image uploads if you integrate UI for this
   handleImageUpload = async (file) => {
     try {
       const result = await uploadImageToBackend(file);
-      const botMessage = this.createChatBotMessage(
-        `Model prediction: ${result}`
-      );
+      const botMessage = this.createChatBotMessage(`Diagnosis: ${result}`);
       this.addMessageToState(botMessage);
     } catch (err) {
-      console.error(err);
-      const errorMessage = this.createChatBotMessage(
-        "Image upload failed. Try again."
+      const errorResponse = this.createChatBotMessage(
+        "Image upload failed. Please retry."
       );
-      this.addMessageToState(errorMessage);
+      this.addMessageToState(errorResponse);
     }
   };
 
   addMessageToState = (botMessage) => {
-    this.setState((prevState) => ({
-      ...prevState,
-      messages: [...prevState.messages, botMessage],
+    this.setState((prev) => ({
+      ...prev,
+      messages: [...prev.messages, botMessage],
     }));
   };
 }
