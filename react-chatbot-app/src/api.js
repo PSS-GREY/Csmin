@@ -1,22 +1,31 @@
-let BACKEND_URL = "";
+let BACKEND_URL = "https://1289b0eade7e.ngrok-free.app"; // <-- your ngrok URL
 
-async function getBackendUrl() {
-  if (!BACKEND_URL) {
-    const res = await fetch("http://127.0.0.1:5000/backend_url"); // Flask local route
-    const data = await res.json();
-    BACKEND_URL = data.backend_url;
-    console.log("✅ Using backend:", BACKEND_URL);
-  }
-  return BACKEND_URL;
-}
-
-export async function sendMessageToBackend(message) {
-  const url = await getBackendUrl();
-  const res = await fetch(`${url}/predict`, {
+export function sendMessageToBackend(message) {
+  return fetch(`${BACKEND_URL}/predict`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text: message }),
-  });
-  const data = await res.json();
-  return data.response;
+  })
+    .then((res) => res.json())
+    .then((data) => data.response)
+    .catch((err) => {
+      console.error("Error calling backend /predict:", err);
+      throw err;
+    });
+}
+
+export function uploadImageToBackend(file) {
+  let formData = new FormData();
+  formData.append("file", file);
+
+  return fetch(`${BACKEND_URL}/upload`, {
+    method: "POST",
+    body: formData,
+  })
+    .then((res) => res.json())
+    .then((data) => data.result)
+    .catch((err) => {
+      console.error("Error calling backend /upload:", err);
+      throw err;
+    });
 }
