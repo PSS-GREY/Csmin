@@ -1,4 +1,4 @@
-// File: src/chatbot/ActionProvider.js
+import { sendMessageToBackend, uploadImageToBackend } from "../api";
 
 class ActionProvider {
   constructor(createChatBotMessage, setStateFunc) {
@@ -6,29 +6,36 @@ class ActionProvider {
     this.setState = setStateFunc;
   }
 
-  // This function is called from the MessageParser
-  handleUserMessage = (message) => {
-    // Send the user's message to the backend API
-    fetch('http://localhost:5000/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ message }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        const botMessage = this.createChatBotMessage(data.response);
-        this.addMessageToState(botMessage);
-      })
-      .catch((err) => {
-        console.log(err);
-        const errorMessage = this.createChatBotMessage("Sorry, I'm having trouble connecting. Please try again later.");
-        this.addMessageToState(errorMessage);
-      });
+  handleUserMessage = async (message) => {
+    try {
+      const response = await sendMessageToBackend(message);
+      const botMessage = this.createChatBotMessage(response);
+      this.addMessageToState(botMessage);
+    } catch (err) {
+      console.error(err);
+      const errorMessage = this.createChatBotMessage(
+        "Sorry, I'm having trouble connecting. Please try again later."
+      );
+      this.addMessageToState(errorMessage);
+    }
   };
 
-  // Helper function to add the bot's message to the chat state
+  handleImageUpload = async (file) => {
+    try {
+      const result = await uploadImageToBackend(file);
+      const botMessage = this.createChatBotMessage(
+        `Model prediction: ${result}`
+      );
+      this.addMessageToState(botMessage);
+    } catch (err) {
+      console.error(err);
+      const errorMessage = this.createChatBotMessage(
+        "Image upload failed. Try again."
+      );
+      this.addMessageToState(errorMessage);
+    }
+  };
+
   addMessageToState = (botMessage) => {
     this.setState((prevState) => ({
       ...prevState,
